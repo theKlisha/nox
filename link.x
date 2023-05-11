@@ -1,12 +1,16 @@
-ENTRY(_start)
+ENTRY(_start);
 
 SECTIONS {
-    .multiboot_header : ALIGN(4) {
-        KEEP(*(.multiboot_header))
+    . = 1M;
+
+    .boot : ALIGN(4) {
+        KEEP(*(._multiboot_header));
     }
 
     .text : ALIGN(4K) {
-        *(.text)
+        KEEP(*(.text._start));
+        KEEP(*(.text._init));
+        *(.text*);
     }
 
     .rodata : ALIGN(4K) {
@@ -19,13 +23,6 @@ SECTIONS {
 
     .bss : ALIGN(4K) {
         *(COMMON)
-        *(.bss)
-    }
-
-    /DISCARD/ :
-    {
-        *(.comment);
-        *(.symtab);
-        *(.strtab);
+        *(.bss);
     }
 }

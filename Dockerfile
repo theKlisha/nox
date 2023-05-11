@@ -3,8 +3,8 @@ FROM rust:buster
 WORKDIR /pwd
 
 RUN rustup target add x86_64-unknown-none
-RUN rustup toolchain install nightly-x86_64-unknown-linux-gnu
-RUN rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+# RUN rustup toolchain install nightly-x86_64-unknown-linux-gnu
+# RUN rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 
 RUN apt-get update
 
