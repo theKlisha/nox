@@ -1,28 +1,32 @@
 TARGET = x86_64-unknown-none
 TARGET_DIR = ./target/${TARGET}
 
+DOCKER_BUILD = docker build --platform linux/amd64 --tag nox-build-container .
+DOCKER_RUN = docker run -it -v $$(pwd):/pwd nox-build-container
+QEMU_RUN = qemu-system-x86_64 -boot d -no-reboot -cdrom
+
 ${TARGET_DIR}/debug/nox:
 	cargo build
 
 ${TARGET_DIR}/release/nox:
 	cargo build --release
 
-${TARGET_DIR}/debug/nox.iso: ${TARGET_DIR}/debug/nox
-	docker build -t nox-build-container .
-	docker run -it -v $$(pwd):/pwd nox-build-container make __native-package-debug
+${TARGET_DIR}/debug/nox.iso: ${TARGET_DIR}/debug/nox Dockerfile
+	${DOCKER_BUILD}
+	${DOCKER_RUN} make __native-package-debug
 
-${TARGET_DIR}/release/nox.iso: ${TARGET_DIR}/release/nox
-	docker build -t nox-build-container .
-	docker run -it -v $$(pwd):/pwd nox-build-container make __native-package-release
+${TARGET_DIR}/release/nox.iso: ${TARGET_DIR}/release/nox Dockerfile
+	${DOCKER_BUILD}
+	${DOCKER_RUN} make __native-package-release
 
 run-debug: ${TARGET_DIR}/debug/nox.iso
-	qemu-system-x86_64 -cdrom ${TARGET_DIR}/debug/nox.iso -boot d -no-reboot
+	${QEMU_RUN} ${TARGET_DIR}/debug/nox.iso
 
 run-release: ${TARGET_DIR}/release/nox.iso
-	qemu-system-x86_64 -cdrom ${TARGET_DIR}/release/nox.iso -boot d -no-reboot
+	${QEMU_RUN} ${TARGET_DIR}/release/nox.iso
 
 verify-multiboot:
-	docker run -it -v $$(pwd):/pwd nox-build-container make __native-verify-multiboot    
+	${DOCKER_RUN} make __native-verify-multiboot    
 
 __native-package-release:
 	mkdir -p ./target/iso/boot/grub
